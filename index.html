@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baking calculator</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+            margin: 0;
+            background-color: #f4f7fa;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            position: relative;
+        }
+        h1 {
+            font-size: 2em;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #555;
+            display: block;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            margin-top: 5px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            margin-top: 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            font-size: 1em;
+            border: 1px solid #e2e6ea;
+            box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+        }
+        .result strong {
+            font-size: 1.1em;
+            display: block;
+            margin-bottom: -20px;
+            color: #333;
+        }
+        .result p {
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .optional-section {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e6ea;
+        }
+        .unit-style {
+            color: #a0a0a0;
+        }
+        /* Style for the language selector */
+        .language-selector {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.9em;
+        }
+        #language {
+            padding: 2px 5px;
+            font-size: 0.9em;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            input, select {
+                padding: 10px;
+            }
+            button {
+                font-size: 1em;
+                padding: 12px;
+            }
+            .language-selector {
+                top: 8px;
+                right: 8px;
+                font-size: 0.8em;
+            }
+            #language {
+                padding: 2px 4px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Discreet language selector in the top right corner -->
+    <div class="language-selector">
+        <select id="language" onchange="changeLanguage()">
+            <option value="en">English</option>
+            <option value="pt">Português</option>
+        </select>
+    </div>
+
+    <h1 id="title">Baking calculator</h1>
+
+    <div class="input-group">
+        <label id="label-final-weight" for="final_weight">Final dough weight (in weight units):</label>
+        <input type="number" id="final_weight" placeholder="Enter final weight">
+    </div>
+
+    <div class="note" id="unit-note">Note: Weight units can be grams (g), ounces (oz), etc.</div>
+
+    <div class="input-group">
+        <label id="label-hydration" for="hydration">Hydration percentage:</label>
+        <input type="number" id="hydration" placeholder="Enter hydration percentage">
+    </div>
+
+    <div class="input-group">
+        <label id="label-fat" for="fat">Fat percentage:</label>
+        <input type="number" id="fat" placeholder="Enter fat percentage">
+    </div>
+
+    <div class="input-group">
+        <label id="label-sugar" for="sugar">Sugar percentage:</label>
+        <input type="number" id="sugar" placeholder="Enter sugar percentage">
+    </div>
+
+    <div class="optional-section">
+        <div class="input-group">
+            <label id="label-preferment" for="preferment">Type of preferment (with hydration):</label>
+            <select id="preferment" onchange="togglePrefermentPercentage()">
+                <option value="none">NONE</option>
+                <option value="poolish">Poolish (100% hydration)</option>
+                <option value="biga">Biga (50% hydration)</option>
+                <option value="pate">Pâte Fermentée (60% hydration)</option>
+                <option value="esponja">Sponge (65% hydration)</option>
+                <option value="custom">Custom</option>
+            </select>
+        </div>
+
+        <div id="preferment_percentage_container" style="display: none;" class="input-group">
+            <label id="label-preferment-percentage" for="preferment_percentage">Percentage of flour in the preferment:</label>
+            <input type="number" id="preferment_percentage" placeholder="Recommended: 20% to 50%">
+        </div>
+
+        <div id="custom_hydration_container" style="display: none;" class="input-group">
+            <label id="label-custom-hydration" for="custom_hydration">Custom preferment hydration percentage:</label>
+            <input type="number" id="custom_hydration" placeholder="Example: 70%">
+        </div>
+    </div>
+
+    <button id="calculate-button" onclick="calculate()">Calculate Ingredients</button>
+
+    <div id="result" class="result"></div>
+
+    <script>
+        let currentLanguage = 'en'; // Store the current language
+
+        // Function to toggle the display of preferment input fields based on selection
+        function togglePrefermentPercentage() {
+            const preferment = document.getElementById('preferment').value;
+            const container = document.getElementById('preferment_percentage_container');
+            const customHydrationContainer = document.getElementById('custom_hydration_container');
+
+            if (preferment === "none") {
+                container.style.display = "none";
+                customHydrationContainer.style.display = "none";
+            } else if (preferment === "custom") {
+                container.style.display = "block";
+                customHydrationContainer.style.display = "block";
+            } else {
+                container.style.display = "block";
+                customHydrationContainer.style.display = "none";
+            }
+        }
+
+        // Function to calculate ingredient quantities based on user input
+        function calculateIngredients(finalWeight, hydration, fat, sugar, prefermentType, prefermentPercentage, customHydration) {
+            let hydrationFactor = hydration / 100;
+            let fatFactor = fat / 100;
+            let sugarFactor = sugar / 100;
+
+            let flour = finalWeight / (1 + hydrationFactor + fatFactor + sugarFactor);
+            let water = flour * hydrationFactor;
+            let fatGrams = flour * fatFactor;
+            let sugarGrams = flour * sugarFactor;
+
+            if (prefermentType !== "none") {
+                let prefermentFlourPercentage = prefermentPercentage / 100;
+                let prefermentFlour = flour * prefermentFlourPercentage;
+
+                let prefermentHydration;
+                switch (prefermentType) {
+                    case "poolish":
+                        prefermentHydration = 1.0; // 100% hydration
+                        break;
+                    case "biga":
+                        prefermentHydration = 0.5; // 50% hydration
+                        break;
+                    case "pate":
+                        prefermentHydration = 0.6; // 60% hydration
+                        break;
+                    case "esponja":
+                        prefermentHydration = 0.65; // 65% hydration
+                        break;
+                    case "custom":
+                        prefermentHydration = customHydration / 100;
+                        break;
+                }
+
+                let prefermentWater = prefermentFlour * prefermentHydration;
+                let remainingFlour = flour - prefermentFlour;
+                let remainingWater = water - prefermentWater;
+
+                return {
+                    "prefermentType": prefermentType,
+                    "Preferment": {
+                        "Flour": prefermentFlour.toFixed(2),
+                        "Water": prefermentWater.toFixed(2)
+                    },
+                    "Final Dough": {
+                        "Flour": remainingFlour.toFixed(2),
+                        "Water": remainingWater.toFixed(2),
+                        "Fat": fatGrams.toFixed(2),
+                        "Sugar": sugarGrams.toFixed(2)
+                    }
+                };
+            } else {
+                return {
+                    "Flour": flour.toFixed(2),
+                    "Water": water.toFixed(2),
+                    "Fat": fatGrams.toFixed(2),
+                    "Sugar": sugarGrams.toFixed(2)
+                };
+            }
+        }
+
+        // Function to calculate and display the ingredient list
+        function calculate() {
+            let finalWeight = parseFloat(document.getElementById('final_weight').value);
+            let hydration = parseFloat(document.getElementById('hydration').value);
+            let fat = parseFloat(document.getElementById('fat').value);
+            let sugar = parseFloat(document.getElementById('sugar').value);
+            let prefermentType = document.getElementById('preferment').value;
+            let prefermentPercentage = parseFloat(document.getElementById('preferment_percentage').value) || 20;
+            let customHydration = parseFloat(document.getElementById('custom_hydration').value) || 70;
+
+            if (isNaN(finalWeight) || isNaN(hydration) || isNaN(fat) || isNaN(sugar)) {
+                alert(currentLanguage === 'en' ? "Invalid input. Please enter numeric values." : "Entrada inválida. Por favor, insira valores numéricos.");
+                return;
+            }
+
+            if (prefermentType !== "none" && (prefermentPercentage < 20 || prefermentPercentage > 50)) {
+                alert(currentLanguage === 'en' ? "The percentage of flour in the preferment should be between 20% and 50%." : "A porcentagem de farinha no pré-fermento deve estar entre 20% e 50%.");
+                return;
+            }
+
+            let ingredients = calculateIngredients(finalWeight, hydration, fat, sugar, prefermentType, prefermentPercentage, customHydration);
+
+            let resultText = '';
+
+            if (prefermentType === "none") {
+                resultText = Object.entries(ingredients).map(([ingredient, amount]) => `${translateIngredient(ingredient)}: ${amount} <span class="unit-style">${currentLanguage === 'en' ? 'weight units' : 'unidades de peso'}</span>`).join("<br>");
+            } else {
+                const translatedPrefermentType = translatePrefermentType(prefermentType);
+                
+                let article = {
+                    "poolish": currentLanguage === 'en' ? "of the" : "do",
+                    "biga": currentLanguage === 'en' ? "of the" : "da",
+                    "pate": currentLanguage === 'en' ? "of the" : "da",
+                    "esponja": currentLanguage === 'en' ? "of the" : "da",
+                    "custom": currentLanguage === 'en' ? "of the" : "do", 
+                }[prefermentType];
+
+                let prefermentResult = Object.entries(ingredients["Preferment"]).map(([ingredient, amount]) => `${translateIngredient(ingredient)}: ${amount} <span class="unit-style">${currentLanguage === 'en' ? 'weight units' : 'unidades de peso'}</span>`).join("<br>");
+                let finalDoughResult = Object.entries(ingredients["Final Dough"]).map(([ingredient, amount]) => `${translateIngredient(ingredient)}: ${amount} <span class="unit-style">${currentLanguage === 'en' ? 'weight units' : 'unidades de peso'}</span>`).join("<br>");
+                
+                resultText = `
+                    <strong>${currentLanguage === 'en' ? "Ingredients" : "Ingredientes"} ${article} ${translatedPrefermentType}:</strong><br>${prefermentResult}<br><br>
+                    <strong>${currentLanguage === 'en' ? "Ingredients for the remaining dough" : "Ingredientes do restante da massa"}:</strong><br>${finalDoughResult}
+                `;
+            }
+
+            document.getElementById('result').innerHTML = resultText;
+        }
+
+        // Function to translate ingredient names based on the current language
+        function translateIngredient(ingredient) {
+            const translations = {
+                "Flour": currentLanguage === 'en' ? "Flour" : "Farinha",
+                "Water": currentLanguage === 'en' ? "Water" : "Água",
+                "Fat": currentLanguage === 'en' ? "Fat" : "Gordura",
+                "Sugar": currentLanguage === 'en' ? "Sugar" : "Açúcar"
+            };
+            return translations[ingredient];
+        }
+
+        // Function to translate preferment type based on the current language
+        function translatePrefermentType(type) {
+            const translations = {
+                "poolish": currentLanguage === 'en' ? "poolish" : "poolish",
+                "biga": currentLanguage === 'en' ? "biga" : "biga",
+                "pate": currentLanguage === 'en' ? "pâte fermentée" : "pâte fermentée",
+                "esponja": currentLanguage === 'en' ? "sponge" : "esponja",
+                "custom": currentLanguage === 'en' ? "custom preferment" : "pré-fermento personalizado"
+            };
+            return translations[type];
+        }
+
+        // Function to change the language of the page dynamically
+        function changeLanguage() {
+            currentLanguage = document.getElementById('language').value;
+
+            if (currentLanguage === 'pt') {
+                document.getElementById('title').innerText = 'Calculadora para panificação';
+                document.getElementById('label-final-weight').innerText = 'Peso final da massa (em unidades de peso):';
+                document.getElementById('final_weight').placeholder = 'Digite o peso final';
+                document.getElementById('unit-note').innerText = 'Nota: Unidades de peso podem ser gramas (g), onças (oz), etc.';
+                document.getElementById('label-hydration').innerText = 'Percentual de hidratação:';
+                document.getElementById('hydration').placeholder = 'Digite o percentual de hidratação';
+                document.getElementById('label-fat').innerText = 'Percentual de gordura:';
+                document.getElementById('fat').placeholder = 'Digite o percentual de gordura';
+                document.getElementById('label-sugar').innerText = 'Percentual de açúcar:';
+                document.getElementById('sugar').placeholder = 'Digite o percentual de açúcar';
+                document.getElementById('label-preferment').innerText = 'Tipo de pré-fermento (com hidratação):';
+                document.getElementById('preferment').innerHTML = `
+                    <option value="none">NENHUM</option>
+                    <option value="poolish">Poolish (100% hidratação)</option>
+                    <option value="biga">Biga (50% hidratação)</option>
+                    <option value="pate">Pâte Fermentée (60% hidratação)</option>
+                    <option value="esponja">Esponja (65% hidratação)</option>
+                    <option value="custom">Personalizado</option>
+                `;
+                document.getElementById('label-preferment-percentage').innerText = 'Percentual de farinha no pré-fermento:';
+                document.getElementById('preferment_percentage').placeholder = 'Recomendado: 20% a 50%';
+                document.getElementById('label-custom-hydration').innerText = 'Percentual de hidratação do pré-fermento:';
+                document.getElementById('custom_hydration').placeholder = 'Exemplo: 70%';
+                document.getElementById('calculate-button').innerText = 'Calcular ingredientes';
+            } else {
+                document.getElementById('title').innerText = 'Ingredient Calculator for Baking';
+                document.getElementById('label-final-weight').innerText = 'Final dough weight (in weight units):';
+                document.getElementById('final_weight').placeholder = 'Enter final weight';
+                document.getElementById('unit-note').innerText = 'Note: Weight units can be grams (g), ounces (oz), etc.';
+                document.getElementById('label-hydration').innerText = 'Hydration percentage:';
+                document.getElementById('hydration').placeholder = 'Enter hydration percentage';
+                document.getElementById('label-fat').innerText = 'Fat percentage:';
+                document.getElementById('fat').placeholder = 'Enter fat percentage';
+                document.getElementById('label-sugar').innerText = 'Sugar percentage:';
+                document.getElementById('sugar').placeholder = 'Enter sugar percentage';
+                document.getElementById('label-preferment').innerText = 'Type of preferment (with hydration):';
+                document.getElementById('preferment').innerHTML = `
+                    <option value="none">NONE</option>
+                    <option value="poolish">Poolish (100% hydration)</option>
+                    <option value="biga">Biga (50% hydration)</option>
+                    <option value="pate">Pâte Fermentée (60% hydration)</option>
+                    <option value="esponja">Sponge (65% hydration)</option>
+                    <option value="custom">Custom</option>
+                `;
+                document.getElementById('label-preferment-percentage').innerText = 'Percentage of flour in the preferment:';
+                document.getElementById('preferment_percentage').placeholder = 'Recommended: 20% to 50%';
+                document.getElementById('label-custom-hydration').innerText = 'Custom preferment hydration percentage:';
+                document.getElementById('custom_hydration').placeholder = 'Example: 70%';
+                document.getElementById('calculate-button').innerText = 'Calculate Ingredients';
+            }
+        }
+    </script>
+
+</body>
+</html>
