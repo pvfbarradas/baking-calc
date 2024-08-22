@@ -194,6 +194,16 @@
     <script>
         let currentLanguage = 'en'; // Store the current language
 
+        // Check LocalStorage for saved language when the page loads
+        window.onload = function() {
+            const savedLanguage = localStorage.getItem('selectedLanguage');
+            if (savedLanguage) {
+                currentLanguage = savedLanguage;
+                document.getElementById('language').value = savedLanguage;
+                changeLanguage(); // Apply the saved language
+            }
+        };
+
         // Function to toggle the display of preferment input fields based on selection
         function togglePrefermentPercentage() {
             const preferment = document.getElementById('preferment').value;
@@ -346,8 +356,10 @@
         }
 
         // Function to change the language of the page dynamically
+        // Function to change the language of the page dynamically
         function changeLanguage() {
             currentLanguage = document.getElementById('language').value;
+            localStorage.setItem('selectedLanguage', currentLanguage); // Save the selected language to LocalStorage
 
             if (currentLanguage === 'pt') {
                 document.getElementById('title').innerText = 'Calculadora para panificação';
